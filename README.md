@@ -57,6 +57,7 @@ export interface Student {
 ```
 
 `
+
 </details>
 
 ### Binding
@@ -75,8 +76,6 @@ import { Context, Hono } from "hono";
 const DB = (c: Context) => {
 	return (new Lite4D()).connection(c.env.TEST)
 }
-
-
 ```
 
 ### Get a QueryBuilder
@@ -86,7 +85,6 @@ const DB = (c: Context) => {
 	//get a query builder
 	(new Lite4D()).connection(c.env.TEST).table('student_test')
 //get a builder and set the table
-
 ```
 
 #### Insert
@@ -122,8 +120,6 @@ await DB(c).table('student_test').insert([
 		class_id: 3,
 		email: 'Jean@ucd.edu'
 	}])
-
-
 ```
 
 <details>
@@ -132,7 +128,6 @@ await DB(c).table('student_test').insert([
 run ` wrangler d1 execute worker --command="select * from student_test"`
 
 ```
-
 ┌────┬──────┬─────┬───────┬──────────┬──────────────┐
 │ id │ name │ age │ score │ class_id │ email        │
 ├────┼──────┼─────┼───────┼──────────┼──────────────┤
@@ -144,7 +139,6 @@ run ` wrangler d1 execute worker --command="select * from student_test"`
 ├────┼──────┼─────┼───────┼──────────┼──────────────┤
 │ 4  │ Jean │ 24  │ 88    │ 3        │ Jean@ucd.edu │
 └────┴──────┴─────┴───────┴──────────┴──────────────┘
-
 ```
 
 </details>
@@ -158,7 +152,6 @@ run ` wrangler d1 execute worker --command="select * from student_test"`
 await DB(c).table('student_test').where('id', 1).first<Student>()
 //if table has a id column as primary key
 await DB(c).table('student_test').find<Student>(1)
-
 ```
 
 #### Rows
@@ -167,7 +160,7 @@ get returns a Promise<D1Result<T>>
 
 ```ts
 await DB(c).table('student_test').where('id', '>', 1).get<Student>()
-  ```
+```
 
 <details>
   <summary>get result </summary>
@@ -241,7 +234,6 @@ await DB(c).table('student_test').get<{ name: string, email: string, id: number 
 ##### Aggregate
 
 ```ts
-
 await DB(c).table('student_test').where('score', '>', 60).count()
 //3
 await DB(c).table('student_test').where('score', '>', 60).count('id')
@@ -258,12 +250,8 @@ await DB(c).table('student_test').max('score')
 await DB(c).table('student_test').select(['name', new Expression('email as school_email')]).where('id', 2).first<{ name: string, school_email: string }>()
 //result 
 {
-	"name"
-:
-	"John",
-		"school_email"
-:
-	"john@uc.edu"
+	name:"John",
+	school_email:"john@uc.edu"
 }
 ```
 
@@ -285,7 +273,6 @@ DB(c).query().select("*").where([["age", ">", 18], ["name", "Jay"]]).from("users
 
 DB(c).query().select("*").where([["age", ">", 18], { name: "Will", location: "LA" }]).from("users")
 //select * from "users" where ("age" > ? and "name" = ? and "location" = ?)
-
 ```
 
 #### orWhere
@@ -337,7 +324,6 @@ DB(c).query().select("*").whereNull("id").from("users");
 ```ts
 DB(c).query().select("*").whereColumn("first", "last").orWhereColumn("third", "middle").from("users");
 //select * from "users" where "first" = "last" or "third" = "middle"
-
 ```
 
 #### Logical group/Nested Where
@@ -381,7 +367,6 @@ DB(c).query().select("*").orderBy((b: Builder): Builder => {
 update can take object or map as arguement
 
 ```ts
-
 let query = DB(c).query();
 
 query.from("users").where("id", 1).update({
@@ -394,7 +379,6 @@ query.from("users").where("id", 1).update({
 update use raw
 
 ```ts
-
 let query = DB(c).query();
 query.from("users").where("id", 1).update({
 	email: "foo",
@@ -435,14 +419,11 @@ query.from("users").insert([new Map(Object.entries({
 	name: "test insert"
 })), new Map(Object.entries({ email: "test2@lite4d.org", name: "test multiple insert" }))]);
 //insert into "users" ("email", "name") values (?, ?), (?, ?)
-
-
 ```
 
 ## Delete
 
 ```ts
-
 let query = db.query();
 query.from("users").where("id", "<", 10).delete();
 //delete from "users" where "id" < ?
@@ -450,8 +431,26 @@ let query = db.query();
 query.from("users").where("id", "<", 10).delete(1);
 //delete from "users" where "id" < ? and "users"."id" = ?
 ```
+
 ## Debug
 
 Most of the methods will eventually call d1 client api.
+use `pretend()` to get prevent sql executing and get query and bindings[](https://)
 
+```ts
+await DB(c).table('student_test').pretend().where('id','<',10).delete()
+//this query will not execute,instead it returns an object
+{
+	"query": "delete from \"student_test\" where \"id\" < ?",
+	"bindings": [
+	  10
+    ]
+}
+```
+
+use this feature to check the sql when you get an unexpected result
+
+## Further more
+
+There are more examples in [test case](https://github.com/glitterlip/lite4d/blob/main/test/builder.test.ts) you can check
 
