@@ -835,6 +835,11 @@ export default class Builder {
 		return this._bindings;
 	}
 
+	pretend(): Builder {
+		this.connection.pretending = true;
+		return this;
+	}
+
 }
 
 

@@ -26,12 +26,18 @@ export class Lite4D {
 
 export class Connection {
 	db: D1Database;
+	pretending: boolean = false;
 
 	constructor(d1: D1Database) {
 		this.db = d1;
 	}
 
 	async First<T>(query: string, bindings: any[], column: string | null = null): Promise<T | null> {
+		let debuging = this.pretend(query, bindings);
+		if (debuging) {
+			// @ts-ignore
+			return debuging;
+		}
 		try {
 			if (column === null) {
 				return await this.db.prepare(query).bind(...bindings).first<T>();
@@ -49,26 +55,55 @@ export class Connection {
 	}
 
 	async Select<T>(query: string, bindings: any[]): Promise<D1Result<T>> {
-
+		let debuging = this.pretend(query, bindings);
+		if (debuging) {
+			// @ts-ignore
+			return debuging;
+		}
 		return await this.db.prepare(query).bind(...bindings).all<T>();
 	}
 
 	async Delete(query: string, bindings: any[]): Promise<D1Result> {
+		let debuging = this.pretend(query, bindings);
+		if (debuging) {
+			// @ts-ignore
+			return debuging;
+		}
 		return await this.db.prepare(query).bind(...bindings).run();
-
 	}
 
 	async Update(query: string, bindings: any[]): Promise<D1Result> {
+		let debuging = this.pretend(query, bindings);
+		if (debuging) {
+			// @ts-ignore
+			return debuging;
+		}
 		return await this.db.prepare(query).bind(...bindings).run();
 	}
 
 	async Insert(query: string, bindings: any[]): Promise<D1Result> {
+		let debuging = this.pretend(query, bindings);
+		if (debuging) {
+			// @ts-ignore
+			return debuging;
+		}
 		return await this.db.prepare(query).bind(...bindings).run();
-
 	}
 
 	async Raw<T>(query: string, bindings: any[]): Promise<T[]> {
+		let debuging = this.pretend(query, bindings);
+		if (debuging) {
+			// @ts-ignore
+			return debuging;
+		}
 		return await this.db.prepare(query).bind(...bindings).raw<T>();
+	}
+
+	pretend(query: string, bindings: any[]): null | { query: string, bindings: Array<any> } {
+		if (this.pretending) {
+			return { query, bindings };
+		}
+		return null;
 	}
 }
 
