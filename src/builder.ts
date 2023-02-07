@@ -734,6 +734,29 @@ export default class Builder {
 
 	}
 
+	/**
+	 * temporary solution from discord
+	 * @param v
+	 */
+	async insertGetId(v: any): Promise<number> {
+
+		let vs: any[] = [];
+		if (v instanceof Map) {
+			[...v.keys()].forEach(k => {
+				vs.push(v.get(k));
+			});
+		} else {
+			[...Object.keys(v)].forEach((k) => {
+				// @ts-ignore
+				vs.push(v[k]);
+			});
+		}
+
+		let res = await this.connection.Raw(this.grammer.compileInsert(this, [v]) + " RETURNING id", vs);
+		//@ts-ignore
+		return res[0][0];
+	}
+
 	update(values: object | Map<string, any>): Promise<D1Result> {
 
 		let old = this._bindings["join"];
